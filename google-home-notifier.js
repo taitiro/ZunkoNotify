@@ -74,12 +74,6 @@ var getSpeechUrl = function(text, host, callback) {
     body: dataString
   };
 
-  function callback(error, response, body) {
-    if (!error && typeof response != undefined  && typeof response.statusCode != undefined && response.statusCode == 200) {
-      console.log(body);
-    }
-  }
-
   request(options, function(error, response, body) {
     if (!error && typeof response != undefined && typeof response.statusCode != undefined &&response.statusCode == 200) {
       console.log('Audio content written to file: ' + tempFileUrl);
