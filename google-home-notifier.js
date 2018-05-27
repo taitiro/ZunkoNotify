@@ -5,7 +5,7 @@ var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 var deviceAddress;
 var language;
-const googleEndpoint = '';
+const googleEndpoint = 'https://us-central1-hotarunotify.cloudfunctions.net/function-1';
 const tempFileName = 'temp.mp3'
 
 var device = function(name, lang = 'en-US') {
