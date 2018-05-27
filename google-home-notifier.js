@@ -75,13 +75,13 @@ var getSpeechUrl = function(text, host, callback) {
   };
 
   function callback(error, response, body) {
-    if (!error && response.statusCode && response.statusCode == 200) {
+    if (!error && isset(response.statusCode) && response.statusCode == 200) {
       console.log(body);
     }
   }
 
   request(options, function(error, response, body) {
-    if (!error && response.statusCode &&response.statusCode == 200) {
+    if (!error && isset(response.statusCode) &&response.statusCode == 200) {
       console.log('Audio content written to file: ' + tempFileUrl);
       onDeviceUp(host, path + tempFileUrl, function(res) {
         callback(res)
