@@ -1,26 +1,28 @@
+const mdns = require('mdns-js');
+const fs = require('fs');
 var Client = require('castv2-client').Client;
 var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-var mdns = require('mdns-js');
+const textToSpeech = require('@google-cloud/text-to-speech');
 var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 var deviceAddress;
 var language;
+var tempFileUrl;
+const tempFileName = 'temp.mp3'
 
-var device = function(name, lang = 'en') {
+// Creates a client
+const TTSClient = new textToSpeech.TextToSpeechClient();
+
+var device = function(name, lang = 'en-US', path = "https://taitiro.synology.me:8080/") {
     device = name;
     language = lang;
+    tempFileUrl = path + tempFileName;
     return this;
 };
 
-var ip = function(ip, lang = 'en') {
+var ip = function(ip, lang = 'en-US', path = "") {
   deviceAddress = ip;
   language = lang;
-  return this;
-}
-
-var googletts = require('google-tts-api');
-var googlettsaccent = 'us';
-var accent = function(accent) {
-  googlettsaccent = accent;
+  tempFileUrl = path + tempFileName;
   return this;
 }
 
@@ -69,12 +71,28 @@ var play = function(mp3_url, callback) {
 };
 
 var getSpeechUrl = function(text, host, callback) {
-  googletts(text, language, 1, 1000, googlettsaccent).then(function (url) {
-    onDeviceUp(host, url, function(res){
-      callback(res)
+  var TTSRequest = {
+    input: {text: text},
+    voice: {languageCode: language, ssmlGender: 'WOMEN'},
+    audioConfig: {audioEncoding: 'MP3'},
+  };
+  TTSClient.synthesizeSpeech(TTSRequest, (err, response) => {
+    if (err) {
+      console.error('ERROR:', err);
+      callback(false);
+    }
+
+    // Write the binary audio content to a local file
+    fs.writeFile(tempFileName, response.audioContent, 'binary', err => {
+      if (err) {
+        console.error('ERROR:', err);
+        callback(false);
+      }
+      onDeviceUp(host, path + tempFileUrl, function(res){
+        callback(res)
+      });
+      console.log('Audio content written to file: ' + tempFileUrl);
     });
-  }).catch(function (err) {
-    console.error(err.stack);
   });
 };
 
@@ -88,7 +106,6 @@ var onDeviceUp = function(host, url, callback) {
   var client = new Client();
   client.connect(host, function() {
     client.launch(DefaultMediaReceiver, function(err, player) {
-
       var media = {
         contentId: url,
         contentType: 'audio/mp3',
@@ -110,6 +127,5 @@ var onDeviceUp = function(host, url, callback) {
 
 exports.ip = ip;
 exports.device = device;
-exports.accent = accent;
 exports.notify = notify;
 exports.play = play;
