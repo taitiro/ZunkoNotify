@@ -1,6 +1,6 @@
 var Client = require('castv2-client').Client;
 var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-var mdns = require('mdns');
+var mdns = require('mdns-js');
 var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 var deviceAddress;
 var language;
@@ -26,16 +26,18 @@ var accent = function(accent) {
 
 var notify = function(message, callback) {
   if (!deviceAddress){
-    browser.start();
-    browser.on('serviceUp', function(service) {
-      console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-      if (service.name.includes(device.replace(' ', '-'))){
+    browser.on('ready', function () {
+	    browser.discover();
+		});
+    browser.on('update', function(service) {
+      console.log('Device "%s" at %s:%d', service.fullname, service.addresses[0], service.port);
+      if (service.fullname.includes(device.replace(' ', '-'))){
         deviceAddress = service.addresses[0];
         getSpeechUrl(message, deviceAddress, function(res) {
           callback(res);
         });
-      }
       browser.stop();
+      }
     });
   }else {
     getSpeechUrl(message, deviceAddress, function(res) {

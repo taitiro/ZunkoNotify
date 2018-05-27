@@ -1,3 +1,16 @@
+# google-home-notifier-by-mdnsjs
+google-home-notifierをmdns-jsを使用するように改変したもの。
+
+改変方法は下記を参考にしました。
+
+https://qiita.com/tkyko13/items/163e80d3b65543d6a9da
+
+元々のgoogle-home-notifier:https://github.com/noelportugal/google-home-notifier
+
+mdns-js:https://github.com/mdns-js
+
+下記はフォーク元google-home-notifierのREADME.mdです。
+
 # google-home-notifier
 Send notifications to Google Home
 
