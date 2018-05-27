@@ -14,13 +14,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/text-to-speech": "~0.1.0",
     "body-parser": "^1.15.2",
     "castv2-client": "^1.1.2",
     "express": "^4.14.0",
-    "fs": "0.0.1-security",
-    "google-gax": "^0.16.1",
-    "grpc": "^1.12.2",
     "mdns-js": "~1.0.1",
     "ngrok": "^2.2.4"
   }

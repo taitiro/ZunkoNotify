@@ -1,47 +1,41 @@
 const mdns = require('mdns-js');
-const fs = require('fs');
+var request = require('request');
 var Client = require('castv2-client').Client;
 var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-const textToSpeech = require('@google-cloud/text-to-speech');
 var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 var deviceAddress;
 var language;
-var tempFileUrl;
+const googleEndpoint = '';
 const tempFileName = 'temp.mp3'
 
-// Creates a client
-const TTSClient = new textToSpeech.TextToSpeechClient();
-
-var device = function(name, lang = 'en-US', path = "https://taitiro.synology.me:8080/") {
-    device = name;
-    language = lang;
-    tempFileUrl = path + tempFileName;
-    return this;
+var device = function(name, lang = 'en-US') {
+  device = name;
+  language = lang;
+  return this;
 };
 
-var ip = function(ip, lang = 'en-US', path = "") {
+var ip = function(ip, lang = 'en-US') {
   deviceAddress = ip;
   language = lang;
-  tempFileUrl = path + tempFileName;
   return this;
 }
 
 var notify = function(message, callback) {
-  if (!deviceAddress){
-    browser.on('ready', function () {
-	    browser.discover();
-		});
+  if (!deviceAddress) {
+    browser.on('ready', function() {
+      browser.discover();
+    });
     browser.on('update', function(service) {
       console.log('Device "%s" at %s:%d', service.fullname, service.addresses[0], service.port);
-      if (service.fullname.includes(device.replace(' ', '-'))){
+      if (service.fullname.includes(device.replace(' ', '-'))) {
         deviceAddress = service.addresses[0];
         getSpeechUrl(message, deviceAddress, function(res) {
           callback(res);
         });
-      browser.stop();
+        browser.stop();
       }
     });
-  }else {
+  } else {
     getSpeechUrl(message, deviceAddress, function(res) {
       callback(res);
     });
@@ -49,13 +43,13 @@ var notify = function(message, callback) {
 };
 
 var play = function(mp3_url, callback) {
-  if (!deviceAddress){
-    browser.on('ready', function () {
-	    browser.discover();
-		});
+  if (!deviceAddress) {
+    browser.on('ready', function() {
+      browser.discover();
+    });
     browser.on('update', function(service) {
       console.log('Device "%s" at %s:%d', service.fullname, service.addresses[0], service.port);
-      if (service.fullname.includes(device.replace(' ', '-'))){
+      if (service.fullname.includes(device.replace(' ', '-'))) {
         deviceAddress = service.addresses[0];
         getPlayUrl(mp3_url, deviceAddress, function(res) {
           callback(res);
@@ -63,7 +57,7 @@ var play = function(mp3_url, callback) {
         browser.stop();
       }
     });
-  }else {
+  } else {
     getPlayUrl(mp3_url, deviceAddress, function(res) {
       callback(res);
     });
@@ -71,35 +65,39 @@ var play = function(mp3_url, callback) {
 };
 
 var getSpeechUrl = function(text, host, callback) {
-  var TTSRequest = {
-    input: {text: text},
-    voice: {languageCode: language, ssmlGender: 'WOMEN'},
-    audioConfig: {audioEncoding: 'MP3'},
-  };
-  TTSClient.synthesizeSpeech(TTSRequest, (err, response) => {
-    if (err) {
-      console.error('ERROR:', err);
-      callback(false);
-    }
 
-    // Write the binary audio content to a local file
-    fs.writeFile(tempFileName, response.audioContent, 'binary', err => {
-      if (err) {
-        console.error('ERROR:', err);
-        callback(false);
-      }
-      onDeviceUp(host, path + tempFileUrl, function(res){
+  var dataString = '{\'message\':\'' + text + '\'}';
+
+  var options = {
+    url: googleEndpoint,
+    method: 'POST',
+    body: dataString
+  };
+
+  function callback(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      console.log(body);
+    }
+  }
+
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      console.log('Audio content written to file: ' + tempFileUrl);
+      onDeviceUp(host, path + tempFileUrl, function(res) {
         callback(res)
       });
-      console.log('Audio content written to file: ' + tempFileUrl);
-    });
+    } else {
+
+      console.error('ERROR:', error);
+      callback(false);
+    }
   });
 };
 
 var getPlayUrl = function(url, host, callback) {
-    onDeviceUp(host, url, function(res){
-      callback(res)
-    });
+  onDeviceUp(host, url, function(res) {
+    callback(res)
+  });
 };
 
 var onDeviceUp = function(host, url, callback) {
@@ -111,7 +109,9 @@ var onDeviceUp = function(host, url, callback) {
         contentType: 'audio/mp3',
         streamType: 'BUFFERED' // or LIVE
       };
-      player.load(media, { autoplay: true }, function(err, status) {
+      player.load(media, {
+        autoplay: true
+      }, function(err, status) {
         client.close();
         callback('Device notified');
       });
