@@ -55,7 +55,7 @@ exports.helloWorld = (req, res) => {
         } else {
 
           file.makePublic().then(() => {
-            res.status(200).send(getPublicUrl(gcsname));
+            res.status(200).send(`https://storage.googleapis.com/${bucketName}/${tempFileName}`);
             console.log("Success");
             return;
           });
