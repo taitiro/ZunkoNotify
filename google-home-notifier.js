@@ -5,19 +5,15 @@ var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 var browser = mdns.createBrowser(mdns.tcp('googlecast'));
 var deviceAddress;
 var language;
-var path;
 const googleEndpoint = 'https://us-central1-hotarunotify.cloudfunctions.net/function-1';
-const tempFileName = 'temp.mp3'
 
-var device = function(name, lang = 'en-US', url) {
-  path = url;
+var device = function(name, lang = 'en-US') {
   device = name;
   language = lang;
   return this;
 };
 
-var ip = function(ip, lang = 'en-US', url) {
-  path = url;
+var ip = function(ip, lang = 'en-US') {
   deviceAddress = ip;
   language = lang;
   return this;
@@ -74,13 +70,16 @@ var getSpeechUrl = function(text, host, callback) {
   var options = {
     uri: googleEndpoint,
     method: 'POST',
+    header : {
+      'Content-type': 'application/json'
+    },
     body: dataString
   };
 
   request(options, function(error, response, body) {
     if (!error && typeof response != undefined && typeof response.statusCode != undefined &&response.statusCode == 200) {
       console.log('Audio content written to file: ' + tempFileUrl);
-      onDeviceUp(host, path + tempFileUrl, function(res) {
+      onDeviceUp(host, body, function(res) {
         callback(res)
       });
     } else {
