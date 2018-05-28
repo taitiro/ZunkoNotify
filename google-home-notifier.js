@@ -70,7 +70,7 @@ var getSpeechUrl = function(text, host, callback) {
   var options = {
     url: googleEndpoint,
     method: 'POST',
-    header : {
+    headers : {
       'Content-type': 'application/json'
     },
     body: dataString
