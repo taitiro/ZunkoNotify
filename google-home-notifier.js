@@ -73,17 +73,16 @@ var getSpeechUrl = function(text, host, callback) {
     headers : {
       'Content-type': 'application/json'
     },
-    body: dataString
+    body: '{"message":"' + text + '"}'
   };
 
   request(options, function(error, response, body) {
     if (!error && typeof response != undefined && typeof response.statusCode != undefined &&response.statusCode == 200) {
-      console.log('Audio content written to file: ' + tempFileUrl);
+      console.log('Audio content written to file: ' + body);
       onDeviceUp(host, body, function(res) {
         callback(res)
       });
     } else {
-
       console.error('ERROR:', error);
       callback(false);
     }
@@ -115,7 +114,7 @@ var onDeviceUp = function(host, url, callback) {
   });
 
   client.on('error', function(err) {
-    console.log('Error: %s', err.message);
+    console.error('Error: %s', err.message);
     client.close();
     callback('error');
   });
