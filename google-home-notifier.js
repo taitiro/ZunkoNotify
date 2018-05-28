@@ -68,7 +68,7 @@ var getSpeechUrl = function(text, host, callback) {
   var dataString = '{\'message\':\'' + text + '\'}';
 
   var options = {
-    uri: googleEndpoint,
+    url: googleEndpoint,
     method: 'POST',
     header : {
       'Content-type': 'application/json'
