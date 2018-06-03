@@ -105,7 +105,7 @@ var onDeviceUp = function(host, url, callback) {
         autoplay: true
       }, function(err, status) {
         client.close();
-        callback('Device notified');
+        callback(url);
       });
     });
   });
