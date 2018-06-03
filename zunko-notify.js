@@ -1,21 +1,19 @@
-const mdns = require('mdns-js');
-var request = require('request');
-var Client = require('castv2-client').Client;
-var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-var browser = mdns.createBrowser(mdns.tcp('googlecast'));
-var deviceAddress;
-var language;
-const googleEndpoint = 'https://us-central1-hotarunotify.cloudfunctions.net/function-1';
+const mdns = require('mdns-js'),
+      request = require('request'),
+      fs = require('fs'),
+      Client = require('castv2-client').Client,
+      DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
+      browser = mdns.createBrowser(mdns.tcp('googlecast')),
+      zunkoAddress = 'http://192.168.86.20:7180/'
+      deviceAddress;
 
-var device = function(name, lang = 'en-US') {
+var device = function(name) {
   device = name;
-  language = lang;
   return this;
 };
 
-var ip = function(ip, lang = 'en-US') {
+var ip = function(ip) {
   deviceAddress = ip;
-  language = lang;
   return this;
 }
 
@@ -64,28 +62,8 @@ var play = function(mp3_url, callback) {
 };
 
 var getSpeechUrl = function(text, host, callback) {
-
-  var dataString = '{\'message\':\'' + text + '\'}';
-
-  var options = {
-    url: googleEndpoint,
-    method: 'POST',
-    headers : {
-      'Content-type': 'application/json'
-    },
-    body: '{"message":"' + text + '"}'
-  };
-
-  request(options, function(error, response, body) {
-    if (!error && typeof response != undefined && typeof response.statusCode != undefined &&response.statusCode == 200) {
-      console.log('Audio content written to file: ' + body);
-      onDeviceUp(host, body, function(res) {
-        callback(res)
-      });
-    } else {
-      console.error('ERROR:', error);
-      callback(false);
-    }
+  request.post({url : zunkoAddress + 'SAVE/ZUNKO', encoding: null,  form : {TALKTEXT:text},headers:{"charset":"UTF-8"}},(err,res,body) =>{
+    fs.writeFileSync('voice.wav', body, 'binary');
   });
 };
 

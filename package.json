@@ -1,8 +1,8 @@
 {
-  "name": "google-home-notifier-by-mdnsjs",
-  "version": "1.1.0",
+  "name": "zunko-notify",
+  "version": "1.0",
   "description": "",
-  "main": "google-home-notifier.js",
+  "main": "zunko-notify.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
