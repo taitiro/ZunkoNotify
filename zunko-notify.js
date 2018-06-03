@@ -98,7 +98,7 @@ var onDeviceUp = function(host, url, callback) {
     client.launch(DefaultMediaReceiver, function(err, player) {
       var media = {
         contentId: url,
-        contentType: 'audio/wave',
+        contentType: 'audio/mp3',
         streamType: 'BUFFERED' // or LIVE
       };
       player.load(media, {
