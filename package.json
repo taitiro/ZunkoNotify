@@ -18,5 +18,9 @@
     "fs": "0.0.1-security",
     "mdns-js": "^1.0.1",
     "request": "^2.87.0"
+  },
+  "devDependencies": {
+    "express": "^4.16.3",
+    "http": "0.0.0"
   }
 }

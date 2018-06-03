@@ -80,9 +80,9 @@ var getSpeechUrl = function(message, host, callback) {
     }
   }, (err, res, body) => {
     fs.writeFileSync(fileName, body, 'binary');
-    //onDeviceUp(host, localAddress + fileName , function(res) {
+    onDeviceUp(host, localAddress + fileName , function(res) {
       callback(res)
-    //});
+    });
   });
 };
 
