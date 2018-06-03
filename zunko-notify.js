@@ -4,7 +4,7 @@ const mdns = require('mdns-js'),
   Client = require('castv2-client').Client,
   DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
   browser = mdns.createBrowser(mdns.tcp('googlecast')),
-  fileName = 'data/voice.wav';
+  fileName = 'voice.wav';
 let deviceAddress,
   localAddress,
   zunkoAddress;
@@ -79,7 +79,7 @@ var getSpeechUrl = function(message, host, callback) {
       "charset": "UTF-8"
     }
   }, (err, res, body) => {
-    fs.writeFileSync(fileName, body, 'binary');
+    fs.writeFileSync('data/' + fileName, body, 'binary');
     onDeviceUp(host, localAddress + fileName , function(res) {
       callback(res)
     });
