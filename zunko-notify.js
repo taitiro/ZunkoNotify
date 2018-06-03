@@ -1,19 +1,25 @@
 const mdns = require('mdns-js'),
-      request = require('request'),
-      fs = require('fs'),
-      Client = require('castv2-client').Client,
-      DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
-      browser = mdns.createBrowser(mdns.tcp('googlecast')),
-      zunkoAddress = 'http://192.168.86.20:7180/'
-      deviceAddress;
+  request = require('request'),
+  fs = require('fs'),
+  Client = require('castv2-client').Client,
+  DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
+  browser = mdns.createBrowser(mdns.tcp('googlecast')),
+  fileName = 'data/voice.wav';
+let deviceAddress,
+  localAddress,
+  zunkoAddress;
 
-var device = function(name) {
-  device = name;
+var device = function(_name, _localAddress, _zunkoAddress) {
+  device = _name;
+  localAddress = _localAddress;
+  zunkoAddress = _zunkoAddress;
   return this;
 };
 
-var ip = function(ip) {
-  deviceAddress = ip;
+var ip = function(_ip, _localAddress, _zunkoAddress) {
+  deviceAddress = _ip;
+  localAddress = _localAddress;
+  zunkoAddress = _zunkoAddress;
   return this;
 }
 
@@ -61,9 +67,22 @@ var play = function(mp3_url, callback) {
   }
 };
 
-var getSpeechUrl = function(text, host, callback) {
-  request.post({url : zunkoAddress + 'SAVE/ZUNKO', encoding: null,  form : {TALKTEXT:text},headers:{"charset":"UTF-8"}},(err,res,body) =>{
-    fs.writeFileSync('voice.wav', body, 'binary');
+var getSpeechUrl = function(message, host, callback) {
+  request.post({
+    url: zunkoAddress + 'SAVE/ZUNKO_EX',
+    encoding: null,
+    form: {
+      TALKTEXT: message,
+      VOLUME: "2.00"
+    },
+    headers: {
+      "charset": "UTF-8"
+    }
+  }, (err, res, body) => {
+    fs.writeFileSync(fileName, body, 'binary');
+    //onDeviceUp(host, localAddress + fileName , function(res) {
+      callback(res)
+    //});
   });
 };
 
