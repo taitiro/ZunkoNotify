@@ -42,14 +42,10 @@ jspm_packages
 
 # Output of 'npm pack'
 *.tgz
+/package-lock.json
 
 # Yarn Integrity file
 .yarn-integrity
-
-/temp.mp3
-
-# Created by https://www.gitignore.io/api/mac
-
 
 # Created by https://www.gitignore.io/api/osx
 
