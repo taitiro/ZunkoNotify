@@ -1,7 +1,6 @@
 const textToSpeech = require('@google-cloud/text-to-speech');
 const storage = require('@google-cloud/storage')();
-const bucketName = 'hotaru';
-const tempFileName = 'temp.mp3';
+const bucketName = 'hotaru0';
 /**
  * Responds to any HTTP request that can provide a "message" field in the body.
  *
@@ -9,14 +8,15 @@ const tempFileName = 'temp.mp3';
  * @param {!Object} res Cloud Function response context.
  */
 exports.helloWorld = (req, res) => {
-  // Example input: {"message": "Hello!"}
+  const filename = new Date().getTime() + ".mp3";
+  const file = storage.bucket(bucketName).file(filename);
   if (req.body.message === undefined) {
-    // This is an error case, as "message" is required.
     res.status(400).send('No message defined!');
     return;
   } else {
     console.log("Access TTS");
     var text = req.body.message;
+    console.log("Text: " + text);
     // Everything is okay.
     // [START tts_synthesize_text]
 
@@ -36,26 +36,24 @@ exports.helloWorld = (req, res) => {
     };
 
     client.synthesizeSpeech(request, (err, response) => {
-      const bucket = storage.bucket(bucketName);
       if (err) {
         console.error('ERROR:', err);
         res.status(500).send('Error' + err);
         return;
       }
       console.log("access complete");
-      const file = bucket.file(tempFileName);
       file.save(response.audioContent, {
         metadata: {
           contentType: "audio/mp3"
         }
       }, function(err) {
         if (err) {
+          console.error('ERROR:', err);
           res.status(500).send('Error' + err);
           return;
         } else {
-
           file.makePublic().then(() => {
-            res.status(200).send(`https://storage.googleapis.com/${bucketName}/${tempFileName}`);
+            res.status(200).send(`https://storage.googleapis.com/${bucketName}/${filename}`);
             console.log("Success");
             return;
           });
