@@ -15,9 +15,9 @@ var server = http.createServer(app).listen(serverPort,
 app.use(express.static('data'));
 
 app.get('/', function(req, res) {
-  googlehome.ip(ip,'http://192.168.86.45:8080/','http://192.168.86.24:7180/');
+  googlehome.ip(ip,'http://192.168.86.45:8080/','http://192.168.86.46:7180/');
   googlehome.notify(text, function(notifyRes) {
-    console.log("exit");
+    console.log(notifyRes);
     res.status(200).send(ip + ' will say: ' + text + '\n');
   });
 });

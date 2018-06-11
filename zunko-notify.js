@@ -70,6 +70,7 @@ var play = function(mp3_url, callback) {
 var getSpeechUrl = function(message, host, callback) {
   request.post({
     url: zunkoAddress + 'SAVE/1700',
+    encoding: null,
     headers: {
       "Content-type": "application/json",
     },
@@ -81,10 +82,15 @@ var getSpeechUrl = function(message, host, callback) {
       intonation:1.0
     }
   }, (err, res, body) => {
-    fs.writeFileSync('data/' + fileName, body, 'binary');
-    onDeviceUp(host, localAddress + fileName , function(res) {
-      callback(res)
-    });
+    if(err){
+      console.error(err);
+      callback(`ERROR: ${err}`)
+    }else{
+      fs.writeFileSync('data/' + fileName, body, 'binary');
+      onDeviceUp(host, localAddress + fileName , function(res) {
+        callback(res)
+      });
+    }
   });
 };
 
