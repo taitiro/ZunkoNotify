@@ -69,14 +69,16 @@ var play = function(mp3_url, callback) {
 
 var getSpeechUrl = function(message, host, callback) {
   request.post({
-    url: zunkoAddress + 'SAVE/ZUNKO_EX',
-    encoding: null,
-    form: {
-      TALKTEXT: message,
-      VOLUME: "2.00"
-    },
+    url: zunkoAddress + 'SAVE/1700',
     headers: {
-      "charset": "UTF-8"
+      "Content-type": "application/json",
+    },
+    json: {
+      talktext: message,
+      speed: 1.0,
+      volume:2.0,
+      pitch:1.0,
+      intonation:1.0
     }
   }, (err, res, body) => {
     fs.writeFileSync('data/' + fileName, body, 'binary');
