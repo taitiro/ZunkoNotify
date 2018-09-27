@@ -37,7 +37,7 @@ const onDeviceUp = (_deviceAddress,_url) => {
 
 const play = (_deviceAddressArray, _url, _callback) => {
   deviceAddressArray.forEach((_deviceAddress) => {
-    play(_deviceAddress, _url);
+    onDeviceUp(_deviceAddress, _url);
   });
   _callback('success');
 };
@@ -63,7 +63,7 @@ const notify = (_deviceAddressArray, _message, _callback) => {
     }else{
       fs.writeFileSync('data/' + fileName, _body, 'binary');
       deviceAddressArray.forEach((_deviceAddress) => {
-        play(_deviceAddress, localAddress + fileName);
+        onDeviceUp(_deviceAddress, localAddress + fileName);
       });
       _callback('success');
     }
