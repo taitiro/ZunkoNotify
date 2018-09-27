@@ -3,71 +3,22 @@ const mdns = require('mdns-js'),
   fs = require('fs'),
   Client = require('castv2-client').Client,
   DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
-  browser = mdns.createBrowser(mdns.tcp('googlecast')),
   fileName = 'voice.wav';
-let deviceAddress,
-  localAddress,
-  zunkoAddress;
+let deviceAddressArray = [],
+  localAddress = null,
+  zunkoAddress = null;
 
-var device = function(_name, _localAddress, _zunkoAddress) {
-  device = _name;
-  localAddress = _localAddress;
-  zunkoAddress = _zunkoAddress;
-  return this;
-};
-
-var ip = function(_ip, _localAddress, _zunkoAddress) {
-  deviceAddress = _ip;
-  localAddress = _localAddress;
-  zunkoAddress = _zunkoAddress;
-  return this;
-}
-
-var notify = function(message, callback) {
-  if (!deviceAddress) {
-    browser.on('ready', function() {
-      browser.discover();
-    });
-    browser.on('update', function(service) {
-      console.log('Device "%s" at %s:%d', service.fullname, service.addresses[0], service.port);
-      if (service.fullname.includes(device.replace(' ', '-'))) {
-        deviceAddress = service.addresses[0];
-        getSpeechUrl(message, deviceAddress, function(res) {
-          callback(res);
-        });
-        browser.stop();
-      }
-    });
-  } else {
-    getSpeechUrl(message, deviceAddress, function(res) {
-      callback(res);
-    });
+let ZunkoNotify = (_ip, _localAddress, _zunkoAddress) =>  {
+  if (typeof _ip === 'string' ){
+    this.deviceAddressArray[0] = _ip;
+  } else if (Array.isArray(_ip)) {
+    this.deviceAddressArray = _ip;
   }
+  this.localAddress = _localAddress;
+  this.zunkoAddress = _zunkoAddress;
 };
 
-var play = function(mp3_url, callback) {
-  if (!deviceAddress) {
-    browser.on('ready', function() {
-      browser.discover();
-    });
-    browser.on('update', function(service) {
-      console.log('Device "%s" at %s:%d', service.fullname, service.addresses[0], service.port);
-      if (service.fullname.includes(device.replace(' ', '-'))) {
-        deviceAddress = service.addresses[0];
-        getPlayUrl(mp3_url, deviceAddress, function(res) {
-          callback(res);
-        });
-        browser.stop();
-      }
-    });
-  } else {
-    getPlayUrl(mp3_url, deviceAddress, function(res) {
-      callback(res);
-    });
-  }
-};
-
-var getSpeechUrl = function(message, host, callback) {
+let notify = (_message, _callback) => {
   request.post({
     url: zunkoAddress + 'SAVE/1700',
     encoding: null,
@@ -75,57 +26,54 @@ var getSpeechUrl = function(message, host, callback) {
       "Content-type": "application/json",
     },
     json: {
-      talktext: message,
+      talktext: _message,
       speed: 1.0,
       volume:2.0,
       pitch:1.0,
       intonation:1.0
     }
-  }, (err, res, body) => {
-    if(err){
-      console.error(err);
-      callback(`ERROR: ${err}`)
+  }, (_err, _res, _body) => {
+    if(_err){
+      console.error(_err);
+      callback(`ERROR: ${_err}`)
     }else{
-      fs.writeFileSync('data/' + fileName, body, 'binary');
-      onDeviceUp(host, localAddress + fileName , function(res) {
-        callback(res)
+      fs.writeFileSync('data/' + fileName, _body, 'binary');
+      play(localAddress + fileName , function(_res) {
+        _callback(_res)
       });
     }
   });
 };
 
-var getPlayUrl = function(url, host, callback) {
-  onDeviceUp(host, url, function(res) {
-    callback(res)
-  });
-};
-
-var onDeviceUp = function(host, url, callback) {
-  var client = new Client();
-  client.connect(host, function() {
-    client.launch(DefaultMediaReceiver, function(err, player) {
-      var media = {
-        contentId: url,
-        contentType: 'audio/mp3',
-        streamType: 'BUFFERED' // or LIVE
-      };
-      player.load(media, {
-        autoplay: true
-      }, function(err, status) {
-        client.close();
-        callback(url);
+let play = (_url, _callback) => {
+  deviceAddressArray.forEach((_deviceAddress) => {  
+    let client = new Client();
+    client.connect(_deviceAddress, function() {
+      client.launch(DefaultMediaReceiver, function(err, player) {
+        var media = {
+          contentId: _url,
+          contentType: 'audio/mp3',
+          streamType: 'BUFFERED' // or LIVE
+        };
+        player.load(media, {
+          autoplay: true
+        }, function(err, status) {
+          client.close();
+          _callback(_url);
+        });
       });
     });
-  });
 
-  client.on('error', function(err) {
-    console.error('Error: %s', err.message);
-    client.close();
-    callback('error');
+    client.on('error', (_err) => {
+      console.error('Error: %s', _err.message);
+      client.close();
+      _callback('error');
+    });
   });
 };
 
-exports.ip = ip;
-exports.device = device;
-exports.notify = notify;
-exports.play = play;
+ZunkoNotify.prototype.notify = notify;
+
+ZunkoNotify.prototype.play = play;
+
+exports.ZunkoNotify = ZunkoNotify;
