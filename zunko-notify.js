@@ -8,8 +8,8 @@ let localAddress = null,
   zunkoAddress = null;
 
 const init = (_localAddress, _zunkoAddress) =>  {
-  this.localAddress = _localAddress;
-  this.zunkoAddress = _zunkoAddress;
+  localAddress = _localAddress;
+  zunkoAddress = _zunkoAddress;
 };
 
 const notify = (_ip, _message, _callback) => {
