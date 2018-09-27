@@ -12,35 +12,37 @@ const init = (_localAddress, _zunkoAddress) =>  {
   zunkoAddress = _zunkoAddress;
 };
 
-
-const play = (_ip, _url, _callback) => {
-  deviceAddressArray.forEach((_deviceAddress) => {  
-    let client = new Client();
-    client.connect(_deviceAddress, function() {
-      client.launch(DefaultMediaReceiver, function(err, player) {
-        var media = {
-          contentId: _url,
-          contentType: 'audio/mp3',
-          streamType: 'BUFFERED' // or LIVE
-        };
-        player.load(media, {
-          autoplay: true
-        }, function(err, status) {
-          client.close();
-          _callback(_url);
-        });
+const onDeviceUp = (_deviceAddress,_url) => {
+  let client = new Client();
+  client.connect(_deviceAddress, function() {
+    client.launch(DefaultMediaReceiver, function(err, player) {
+      var media = {
+        contentId: _url,
+        contentType: 'audio/mp3',
+        streamType: 'BUFFERED' // or LIVE
+      };
+      player.load(media, {
+        autoplay: true
+      }, function(err, status) {
+        client.close();
       });
     });
-
-    client.on('error', (_err) => {
-      console.error('Error: %s', _err.message);
-      client.close();
-      _callback('error');
-    });
   });
+
+  client.on('error', (_err) => {
+    console.error('Error: %s', _err.message);
+    client.close();
+  });
+}
+
+const play = (_deviceAddressArray, _url, _callback) => {
+  deviceAddressArray.forEach((_deviceAddress) => {
+    play(_deviceAddress, _url);
+  });
+  _callback('success');
 };
 
-const notify = (_ip, _message, _callback) => {
+const notify = (_deviceAddressArray, _message, _callback) => {
   request.post({
     url: zunkoAddress + 'SAVE/1700',
     encoding: null,
@@ -60,9 +62,10 @@ const notify = (_ip, _message, _callback) => {
       callback(`ERROR: ${_err}`)
     }else{
       fs.writeFileSync('data/' + fileName, _body, 'binary');
-      play(_ip, localAddress + fileName , function(_res) {
-        _callback(_res)
+      deviceAddressArray.forEach((_deviceAddress) => {
+        play(_deviceAddress, localAddress + fileName);
       });
+      _callback('success');
     }
   });
 };
