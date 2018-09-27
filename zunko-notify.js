@@ -59,7 +59,7 @@ const notify = (_deviceAddressArray, _message, _callback) => {
   }, (_err, _res, _body) => {
     if(_err){
       console.error(_err);
-      callback(`ERROR: ${_err}`)
+      _callback(`ERROR: ${_err}`)
     }else{
       fs.writeFileSync('data/' + fileName, _body, 'binary');
       deviceAddressArray.forEach((_deviceAddress) => {
