@@ -4,21 +4,15 @@ const mdns = require('mdns-js'),
   Client = require('castv2-client').Client,
   DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver,
   fileName = 'voice.wav';
-let deviceAddressArray = [],
-  localAddress = null,
+let localAddress = null,
   zunkoAddress = null;
 
-let ZunkoNotify = (_ip, _localAddress, _zunkoAddress) =>  {
-  if (typeof _ip === 'string' ){
-    this.deviceAddressArray[0] = _ip;
-  } else if (Array.isArray(_ip)) {
-    this.deviceAddressArray = _ip;
-  }
+const init = (_localAddress, _zunkoAddress) =>  {
   this.localAddress = _localAddress;
   this.zunkoAddress = _zunkoAddress;
 };
 
-let notify = (_message, _callback) => {
+const notify = (_ip, _message, _callback) => {
   request.post({
     url: zunkoAddress + 'SAVE/1700',
     encoding: null,
@@ -38,14 +32,14 @@ let notify = (_message, _callback) => {
       callback(`ERROR: ${_err}`)
     }else{
       fs.writeFileSync('data/' + fileName, _body, 'binary');
-      play(localAddress + fileName , function(_res) {
+      play(_ip, localAddress + fileName , function(_res) {
         _callback(_res)
       });
     }
   });
 };
 
-let play = (_url, _callback) => {
+const play = (_ip, _url, _callback) => {
   deviceAddressArray.forEach((_deviceAddress) => {  
     let client = new Client();
     client.connect(_deviceAddress, function() {
@@ -72,8 +66,6 @@ let play = (_url, _callback) => {
   });
 };
 
-ZunkoNotify.prototype.notify = notify;
-
-ZunkoNotify.prototype.play = play;
-
-exports.ZunkoNotify = ZunkoNotify;
+exports.init = init;
+exports.play = play;
+exports.notify = notify;
